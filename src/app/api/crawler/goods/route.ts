@@ -7,7 +7,7 @@ function runPython(args: string[]): Promise<any> {
     const cwd = process.cwd();
     console.log('Working directory:', cwd);
     
-    const proc = spawn('python', ['scripts/inventory_demo.py', ...args], {
+    const proc = spawn(process.env.PYTHON_PATH!, ['scripts/inventory_demo.py', ...args], {
       cwd: cwd,
       windowsHide: true,
       env: { ...process.env }
@@ -20,8 +20,6 @@ function runPython(args: string[]): Promise<any> {
     proc.stderr.on('data', (d) => { stderr += d.toString(); });
     
     proc.on('close', (code) => {
-      console.log('Code:', code);
-      console.log('Stdout len:', stdout.length, 'Stderr:', stderr.slice(0, 500));
       
       if (stdout.trim()) {
         try { resolve(JSON.parse(stdout.trim())); } 
@@ -38,13 +36,8 @@ export async function GET(request: NextRequest) {
   const cookie = request.nextUrl.searchParams.get('cookie');
   const page = request.nextUrl.searchParams.get('page') || '1';
   const limit = request.nextUrl.searchParams.get('limit') || '20';
+
   
-  console.log('=== API Called ===');
-  console.log('Cookie length from URL:', cookie?.length);
-  console.log('Cookie has _m_h5_tk:', cookie?.includes('_m_h5_tk'));
-  
-  const result = await runPython(['page_data', cookie || 'test', page, limit]);
-  console.log('Result:', result ? JSON.stringify(result).slice(0, 500) : 'empty');
-  
+  const result = await runPython(['page_data', cookie || 'test', page, limit]);  
   return NextResponse.json(result);
 }

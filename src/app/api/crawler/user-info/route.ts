@@ -4,7 +4,7 @@ import { spawn } from 'child_process';
 
 function runPython(args: string[]): Promise<any> {
   return new Promise((resolve, reject) => {
-    const proc = spawn('python', ['scripts/inventory_demo.py', ...args]);
+    const proc = spawn(process.env.PYTHON_PATH!, ['scripts/inventory_demo.py', ...args]);
     let stdout = '';
     let stderr = '';
     
@@ -12,9 +12,6 @@ function runPython(args: string[]): Promise<any> {
     proc.stderr.on('data', (d) => { stderr += d.toString(); });
     
     proc.on('close', (code) => {
-      console.log('Python code:', code);
-      console.log('Python stdout:', stdout);
-      console.log('Python stderr:', stderr);
       
       if (code === 0 && stdout.trim()) {
         try { resolve(JSON.parse(stdout.trim())); } 
