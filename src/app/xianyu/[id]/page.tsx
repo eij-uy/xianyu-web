@@ -39,6 +39,22 @@ interface Good {
     update_time: string;
 }
 
+interface CrawlerGood {
+    cardData: {
+        id: string;
+        title?: { text?: string };
+        price?: { text?: string };
+        priceInfo?: { price?: string };
+        image?: { imgUrl?: string; 0?: { imgUrl?: string } };
+        detailParams?: { picUrl?: string };
+        itemStatus?: number;
+    };
+}
+
+interface CrawlerResponse {
+    cardList?: CrawlerGood[];
+}
+
 enum ITEM_STATUS_ENUMS {
     ON_SALE = 0,
     SOLD = 1,
@@ -80,17 +96,16 @@ export default function XianyuAccountPage() {
     });
 
     const circulationListCrawlerGoods = async () => {
-        const goodList: any[] = [];
+        const goodList: CrawlerGood[] = [];
         const run = async () => {
             const LIMIT = 20;
             const res = await fetch(
                 `/api/crawler/goods?cookie=${encodeURIComponent(account?.cookie || "")}&page=1&limit=${LIMIT}`,
             );
-            const response = await res.json();
-            const goods = response?.cardList || [];
-            console.log("goods", goods);
-            goodList.push(...goods);
-            if (goods.length >= LIMIT) {
+            const response: CrawlerResponse = await res.json();
+            const crawlerGoods = response?.cardList || [];
+            goodList.push(...crawlerGoods);
+            if (crawlerGoods.length >= LIMIT) {
                 run();
             }
         };
@@ -98,14 +113,14 @@ export default function XianyuAccountPage() {
         return goodList;
     };
 
-    const transformGood = (crawlerGood: any): Good => {
+    const transformGood = (crawlerGood: CrawlerGood): Good => {
         // @ts-expect-error createAt 和 updateTime 这里暂时不需要
         return {
             xianyu_id: String(crawlerGood.cardData.id),
             account_id: Number(account?.id || 0),
-            title: String(crawlerGood.cardData.title || ""),
-            price: Number(crawlerGood.cardData.priceInfo.price),
-            image: String(crawlerGood.cardData?.detailParams.picUrl),
+            title: String(crawlerGood.cardData.title?.text || ""),
+            price: Number(crawlerGood.cardData.priceInfo?.price || crawlerGood.cardData.price?.text?.replace('¥', '') || 0),
+            image: String(crawlerGood.cardData.detailParams?.picUrl || crawlerGood.cardData.image?.imgUrl || ""),
             status: crawlerGood.cardData?.itemStatus as ITEM_STATUS_ENUMS,
         };
     };

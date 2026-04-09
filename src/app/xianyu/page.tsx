@@ -42,6 +42,16 @@ interface Product {
   status: '在售' | '已售' | '下架';
 }
 
+interface CrawlerGood {
+  cardData?: {
+    itemStatus?: number;
+  };
+}
+
+interface CrawlerResponse {
+  cardList?: CrawlerGood[];
+}
+
 
 
 export default function XianyuPage() {
@@ -86,7 +96,7 @@ export default function XianyuPage() {
       const goodsData = await goodsRes.json();
       
       const goods = goodsData?.cardList || [];
-      const sellingGoods = goods.filter((item: any) => item.cardData?.itemStatus === 1);
+      const sellingGoods = goods.filter((item: CrawlerGood) => item.cardData?.itemStatus === 1);
       
       const accountData = {
         cookie: newAccount.cookie.trim(),

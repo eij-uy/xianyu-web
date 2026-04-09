@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 
+interface Account {
+  id: number;
+  cookie: string;
+  nickname: string;
+  account_id: string;
+  avatar: string;
+  products: number;
+  created_at: string;
+  today_gmv: number;
+  today_orders: number;
+  today_refunds: number;
+  total_gmv: number;
+  total_orders: number;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -8,7 +23,7 @@ export async function GET(
   try {
     const { id } = await params;
     
-    const result = await sql`SELECT * FROM accounts WHERE id = ${id}`;
+    const result = await sql<Account[]>`SELECT * FROM accounts WHERE id = ${id}`;
     
     if (result.length === 0) {
       return NextResponse.json({ error: 'Account not found' }, { status: 404 });
@@ -27,7 +42,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const { nickname, avatar, cookie } = await request.json();
+    const { nickname, avatar, cookie } = await request.json() as { nickname?: string; avatar?: string; cookie?: string };
     
     await sql`
       UPDATE accounts 
@@ -37,7 +52,7 @@ export async function PUT(
       WHERE id = ${id}
     `;
     
-    const result = await sql`SELECT * FROM accounts WHERE id = ${id}`;
+    const result = await sql<Account[]>`SELECT * FROM accounts WHERE id = ${id}`;
     
     return NextResponse.json(result[0]);
   } catch (error) {

@@ -30,7 +30,7 @@ function runPython(args: string[]): Promise<any> {
 export async function GET(request: NextRequest) {
   try {
     const cookie = request.nextUrl.searchParams.get('cookie');
-    const accounts = await sql('SELECT cookie FROM accounts LIMIT 1');
+    const accounts = await sql<Array<{ cookie: string }>>`SELECT cookie FROM accounts LIMIT 1`;
     const finalCookie = cookie || accounts[0]?.cookie;
     
     if (!finalCookie) {

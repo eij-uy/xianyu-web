@@ -10,12 +10,14 @@ function formatDateTimeLocal(date: Date): string {
     return `${localDate.getFullYear()}-${pad(localDate.getMonth() + 1)}-${pad(localDate.getDate())} ${pad(localDate.getHours())}:${pad(localDate.getMinutes())}:${pad(localDate.getSeconds())}`;
 }
 
-function convertDateFields(data: any): any {
+function convertDateFields<T>(data: T): T {
     if (data === null || data === undefined) return data;
-    if (Array.isArray(data)) return data.map(convertDateFields);
+    if (Array.isArray(data)) {
+        return data.map((item) => convertDateFields(item)) as unknown as T;
+    }
     if (typeof data !== 'object') return data;
     
-    const result: any = {};
+    const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
         if (value instanceof Date) {
             result[key] = formatDateTimeLocal(value);
@@ -25,18 +27,20 @@ function convertDateFields(data: any): any {
             result[key] = value;
         }
     }
-    return result;
+    return result as unknown as T;
 }
 
-export const sql = (strings: TemplateStringsArray, ...values: any[]) => {
+export function sql<T = unknown>(strings: TemplateStringsArray, ...values: unknown[]): Promise<T> {
     const result = baseSql(strings, ...values);
     
     if (result?.then) {
-        return result.then((data: any) => {
+        return result.then((data) => {
             if (Array.isArray(data)) return convertDateFields(data);
-            if (data?.rows) return convertDateFields(data.rows);
+            if (data && typeof data === 'object' && 'rows' in data) {
+                return convertDateFields((data as { rows: unknown[] }).rows);
+            }
             return convertDateFields(data);
-        });
+        }) as unknown as Promise<T>;
     }
-    return result;
-};
+    return result as unknown as Promise<T>;
+}
