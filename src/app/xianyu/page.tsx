@@ -17,6 +17,7 @@ import {
   Edit,
   AlertTriangle,
 } from 'lucide-react';
+import { useToast } from '@/components/Toast';
 
 interface XianyuAccount {
   id: number;
@@ -63,6 +64,7 @@ export default function XianyuPage() {
   const [deleteAccount, setDeleteAccount] = useState<XianyuAccount | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editAccount, setEditAccount] = useState<XianyuAccount | null>(null);
+  const { showToast }  = useToast()
 
   const formatGmv = (value: number) => {
     if (value >= 10000) return (value / 10000).toFixed(1) + 'w';
@@ -116,9 +118,10 @@ export default function XianyuPage() {
       setAccounts([...accounts, account]);
       setNewAccount({ cookie: '' });
       setShowAddModal(false);
+      showToast("success", "添加账号成功");
     } catch (err) {
       console.error('Failed to add account:', err);
-      alert('添加账号失败: ' + (err instanceof Error ? err.message : '未知错误'));
+      showToast("error", "添加失败: " + (err instanceof Error ? err.message : '未知错误'));
     }
   };
 
@@ -134,8 +137,10 @@ export default function XianyuPage() {
         await new Promise(resolve => setTimeout(resolve, 300));
         setAccounts(accounts.filter(a => a.id !== deleteAccount.id));
         setDeleteAccount(null);
+        showToast("success", "删除成功");
       } catch (err) {
         console.error('Failed to delete account:', err);
+        showToast("error", "删除失败");
       } finally {
         setIsDeleting(false);
       }

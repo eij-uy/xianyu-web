@@ -122,6 +122,7 @@ export default function XianyuAccountPage() {
             price: Number(crawlerGood.cardData.priceInfo?.price || crawlerGood.cardData.price?.text?.replace('¥', '') || 0),
             image: String(crawlerGood.cardData.detailParams?.picUrl || crawlerGood.cardData.image?.imgUrl || ""),
             status: crawlerGood.cardData?.itemStatus as ITEM_STATUS_ENUMS,
+            created_at: new Date().toISOString()
         };
     };
 

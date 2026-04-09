@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { useToast } from "@/components/Toast";
 
 interface InventoryItem {
   id: number;
@@ -42,6 +43,7 @@ export default function InventoryPage() {
   const [newItem, setNewItem] = useState({ name: "", category: "手机", stock: 0, capacity: 100 });
   const [deleteItem, setDeleteItem] = useState<InventoryItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { showToast } = useToast()
 
   useEffect(() => {
     fetch('/api/inventory')
@@ -115,6 +117,7 @@ export default function InventoryPage() {
         await new Promise(resolve => setTimeout(resolve, 300));
         setInventory(inventory.filter(item => item.id !== deleteItem.id));
         setDeleteItem(null);
+        showToast("success", "删除成功");
       } catch (err) {
         console.error('Failed to delete item:', err);
       } finally {
